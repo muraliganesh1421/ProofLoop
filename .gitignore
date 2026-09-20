@@ -1,0 +1,47 @@
+# Android / Gradle
+.gradle/
+build/
+*/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio
+.idea/
+*.iml
+
+# Local configuration
+local.properties
+
+# Environment / secrets
+.env
+.env.*
+*.secret
+secrets.properties
+
+# Firebase / service credentials
+google-services.json
+service-account*.json
+*-service-account.json
+
+# Signing keys
+*.jks
+*.keystore
+
+# Generated APK / AAB
+*.apk
+*.aab
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local databases
+*.db
