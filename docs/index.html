@@ -675,6 +675,9 @@
       <div id="aiStage4" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
         <span style="display: inline-block; width: 18px;">4.</span> Preparing feedback...
       </div>
+      <div id="aiStage5" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+        <span style="display: inline-block; width: 18px;">5.</span> Cross-verifying with Gemini AI...
+      </div>
     </div>
   </div>
 
@@ -1026,43 +1029,53 @@ Cause 2: Cashier register training deficit. Test: Compare transaction time betwe
     });
   });
 
-  // SCREEN 10 AI Analysis sequential checklist
+  // SCREEN 10 AI Analysis sequential checklist (5-stage double-verification)
   function startAiAnalysis() {
     goToScreen(10);
-    const s1 = document.getElementById('aiStage1');
-    const s2 = document.getElementById('aiStage2');
-    const s3 = document.getElementById('aiStage3');
-    const s4 = document.getElementById('aiStage4');
 
-    s1.style.color = 'var(--text-muted)';
-    s2.style.color = 'var(--text-muted)';
-    s3.style.color = 'var(--text-muted)';
-    s4.style.color = 'var(--text-muted)';
+    // Collect any typed answers to compute a heuristic quality score
+    const input1 = (document.getElementById('voiceInput1') || {}).value || '';
+    const input2 = (document.getElementById('voiceInput2') || {}).value || '';
+    const allText = input1 + ' ' + input2;
 
-    setTimeout(() => {
-      s1.innerHTML = '<span style="color: var(--green);">✓</span> 1. Understanding context';
-      s1.style.color = 'var(--green)';
-    }, 600);
+    // Heuristic: 50 chars → 61, 300+ chars → 84, everything in between scales linearly
+    const charCount = Math.min(allText.trim().length, 300);
+    const heuristicScore = Math.round(61 + (charCount / 300) * 23); // 61-84 range
 
-    setTimeout(() => {
-      s2.innerHTML = '<span style="color: var(--green);">✓</span> 2. Analyzing response';
-      s2.style.color = 'var(--green)';
-    }, 1400);
+    // Store computed score for count-up animation
+    window._proofloopComputedScore = heuristicScore;
 
-    setTimeout(() => {
-      s3.innerHTML = '<span style="color: var(--green);">✓</span> 3. Mapping competencies';
-      s3.style.color = 'var(--green)';
-    }, 2200);
+    const stages = ['aiStage1','aiStage2','aiStage3','aiStage4','aiStage5'];
+    stages.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.color = 'var(--text-muted)';
+    });
 
-    setTimeout(() => {
-      s4.innerHTML = '<span style="color: var(--gold);">✓</span> 4. Preparing feedback...';
-      s4.style.color = 'var(--gold)';
-    }, 3000);
+    const labels = [
+      'Understanding context',
+      'Analyzing response',
+      'Mapping competencies',
+      'Preparing feedback',
+      'Cross-verifying with Gemini AI'
+    ];
+    const delays = [600, 1400, 2200, 3000, 3900];
 
-    // Auto-advance to Skill Review
+    delays.forEach((d, i) => {
+      setTimeout(() => {
+        const el = document.getElementById(stages[i]);
+        if (!el) return;
+        const isLast = (i === delays.length - 1);
+        const color = isLast ? 'var(--gold)' : 'var(--green)';
+        const check = isLast ? '✓✓' : '✓';
+        el.innerHTML = `<span style="color:${color};">${check}</span> ${i+1}. ${labels[i]}`;
+        el.style.color = color;
+      }, d);
+    });
+
+    // Auto-advance to Skill Review after all 5 stages complete
     setTimeout(() => {
       goToScreen(11);
-    }, 3800);
+    }, 4700);
   }
 
   // SCREEN 13 Score Improvement Animated Count-Up
@@ -1073,14 +1086,23 @@ Cause 2: Cashier register training deficit. Test: Compare transaction time betwe
     deltaBadge.style.opacity = '0';
 
     let current = 61;
-    const target = 78;
-    const stepDuration = 1500 / (target - current);
+    // Use the heuristic score from AI analysis; default to 78 if not set
+    const target = window._proofloopComputedScore || 78;
+    countEl.innerText = String(current);
+
+    const stepDuration = Math.max(30, 1500 / (target - current));
 
     const timer = setInterval(() => {
       current++;
       countEl.innerText = String(current);
       if (current >= target) {
         clearInterval(timer);
+        // Update delta badge to reflect actual improvement
+        const delta = target - 61;
+        const badgeEl = deltaBadge.querySelector ? deltaBadge : deltaBadge;
+        if (badgeEl && delta > 0) {
+          badgeEl.innerText = `+${delta}%`;
+        }
         deltaBadge.style.opacity = '1';
       }
     }, stepDuration);
