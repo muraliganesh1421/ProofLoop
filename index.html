@@ -1,17 +1,1122 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFC700'><path d='M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5 10 5 10-5-5-2.5-5 2.5z'/></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>ProofLoop — Clickable Web Prototype</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/index-bYBeIJsD.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CH8FAGLU.css">
-  </head>
-  <body class="bg-[#0A0C11] text-[#F8FAFC]">
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ProofLoop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0A0C11;
+      --card-bg: #131823;
+      --card-border: #222B3D;
+      --card-elevated: #182030;
+      --gold: #FFC700;
+      --gold-dark: #E5B000;
+      --gold-glow: rgba(255, 199, 0, 0.25);
+      --cyan: #00E5FF;
+      --green: #00E676;
+      --red: #FF4D4F;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #030508;
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Phone viewport container: max 480px, fills screen on mobile */
+    .mobile-frame {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background-color: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    }
+
+    @media (min-width: 520px) {
+      body {
+        padding: 20px 0;
+      }
+      .mobile-frame {
+        min-height: 840px;
+        height: 90vh;
+        border-radius: 36px;
+        border: 2px solid var(--card-border);
+      }
+    }
+
+    /* Screen manager */
+    .screen {
+      display: none;
+      flex-direction: column;
+      min-height: 100%;
+      padding: 20px 18px 80px 18px;
+      animation: screenFade 0.25s ease-out;
+    }
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes screenFade {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Top Jump Bar for Judges */
+    .judge-step-bar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(10, 12, 17, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      font-size: 11px;
+    }
+
+    .judge-step-bar select {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 8px;
+      outline: none;
+      cursor: pointer;
+      max-width: 220px;
+    }
+
+    /* Reusable UI Components */
+    .btn-gold {
+      background: var(--gold);
+      color: #0A0C11;
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, background 0.15s ease;
+      box-shadow: 0 4px 16px var(--gold-glow);
+    }
+    .btn-gold:active {
+      transform: scale(0.98);
+      background: var(--gold-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1.5px solid var(--gold);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 13px 20px;
+      border-radius: 14px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .btn-outline:active {
+      background: rgba(255, 199, 0, 0.1);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .tag-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(19, 24, 35, 0.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 40;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .bottom-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .bottom-tab.active {
+      color: var(--gold);
+    }
+
+    .bottom-tab svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Waveform Animation */
+    .waveform-box {
+      background: var(--card-elevated);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wave-bars {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 32px;
+    }
+
+    .wave-bar {
+      width: 5px;
+      background: var(--gold);
+      border-radius: 3px;
+      height: 8px;
+    }
+
+    .wave-bars.animated .wave-bar:nth-child(1) { animation: wave 0.6s infinite ease 0.1s; }
+    .wave-bars.animated .wave-bar:nth-child(2) { animation: wave 0.8s infinite ease 0.25s; }
+    .wave-bars.animated .wave-bar:nth-child(3) { animation: wave 0.5s infinite ease 0.15s; }
+    .wave-bars.animated .wave-bar:nth-child(4) { animation: wave 0.7s infinite ease 0.35s; }
+    .wave-bars.animated .wave-bar:nth-child(5) { animation: wave 0.9s infinite ease 0.2s; }
+
+    @keyframes wave {
+      0%, 100% { height: 8px; }
+      50% { height: 30px; }
+    }
+
+    /* Textarea styling */
+    textarea, input[type="text"], input[type="password"], input[type="email"] {
+      width: 100%;
+      background: #0E131C;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.15s;
+    }
+    textarea:focus, input:focus {
+      border-color: var(--gold);
+    }
+
+    /* Toast */
+    .toast {
+      display: none;
+      position: absolute;
+      bottom: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E2838;
+      border: 1px solid var(--gold);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 10px 18px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+      z-index: 100;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-frame">
+  <!-- Top Judge Step Switcher -->
+  <div class="judge-step-bar" id="judgeBar">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <div style="width: 18px; height: 18px; border-radius: 5px; background: var(--gold); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px;">P</div>
+      <span style="font-weight: 800; color: #fff;">ProofLoop</span>
+    </div>
+    <select id="stepSelect" onchange="jumpToScreen(Number(this.value))">
+      <option value="1">1. Splash Screen</option>
+      <option value="2">2. Login Screen</option>
+      <option value="3">3. Home Screen</option>
+      <option value="4">4. Mission Brief</option>
+      <option value="5">5. Camera Screen</option>
+      <option value="6">6. Voice Investigation</option>
+      <option value="7">7. Interview Screen</option>
+      <option value="8">8. Defend Solution</option>
+      <option value="9">9. AI Adaptive Follow-up</option>
+      <option value="10">10. AI Analysis Screen</option>
+      <option value="11">11. Skill Review</option>
+      <option value="12">12. Corrective Retry</option>
+      <option value="13">13. Score Improvement</option>
+      <option value="14">14. Verified Proof Card</option>
+      <option value="15">15. Skill Dashboard</option>
+    </select>
+  </div>
+
+  <!-- SCREEN 1: SPLASH SCREEN -->
+  <div class="screen active" id="screen1" style="justify-content: center; align-items: center; text-align: center; padding-bottom: 20px;">
+    <div id="splashLogo" style="opacity: 0; transform: translateY(20px); transition: all 1s ease;">
+      <div style="width: 84px; height: 84px; border-radius: 26px; background: linear-gradient(135deg, #2A2000, #131823); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; box-shadow: 0 0 36px var(--gold-glow);">
+        <span style="font-size: 42px; font-weight: 900; color: var(--gold);">P</span>
+      </div>
+      <h1 style="font-size: 38px; font-weight: 900; letter-spacing: -0.5px; color: #fff; margin-bottom: 8px;">ProofLoop</h1>
+      <div style="width: 120px; height: 2px; background: var(--gold); margin: 12px auto 14px auto; border-radius: 1px;"></div>
+      <p style="font-size: 15px; color: var(--text-secondary); font-weight: 500;">Don't just learn it. Prove it.</p>
+      <div style="width: 8px; height: 8px; background: var(--gold); border-radius: 50%; margin: 36px auto 0 auto; box-shadow: 0 0 16px var(--gold);"></div>
+    </div>
+    <div style="position: absolute; bottom: 32px; font-size: 11px; color: var(--text-muted);">
+      Auto-advancing... or tap anywhere
+    </div>
+  </div>
+
+  <!-- SCREEN 2: LOGIN SCREEN -->
+  <div class="screen" id="screen2" style="justify-content: space-between;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 24px;">
+        <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--gold); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px;">P</div>
+        <span style="font-size: 20px; font-weight: 900; color: #fff;">ProofLoop</span>
+      </div>
+
+      <h2 style="font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px;">Sign In</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Enter your credentials to access your missions</p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">EMAIL</label>
+          <input type="email" id="loginEmail" value="murali.student@iqoo.edu" />
+        </div>
+        <div>
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">PASSWORD</label>
+          <input type="password" value="••••••••••••" />
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 30px;">
+      <button class="btn-gold" onclick="goToScreen(3)">
+        Login →
+      </button>
+      <button class="btn-outline" onclick="goToScreen(3)">
+        Continue as Reviewer (Demo Mode)
+      </button>
+      <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+        Reviewer mode pre-loads full mission state with zero config
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: HOME SCREEN -->
+  <div class="screen" id="screen3">
+    <!-- Top Greeting -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div>
+        <div style="font-size: 12px; color: var(--text-muted);">Good morning,</div>
+        <div style="font-size: 18px; font-weight: 800; color: #fff;">Murali Ganesh</div>
+      </div>
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--gold); display: flex; align-items: center; gap: 4px;">
+        <span>🔥</span> 3 Days
+      </div>
+    </div>
+
+    <!-- Motivational banner -->
+    <div style="background: rgba(255, 199, 0, 0.08); border: 1px solid rgba(255, 199, 0, 0.25); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: var(--gold); display: flex; align-items: center; gap: 8px;">
+      <span>💡</span>
+      <span>"Small steps create big progress"</span>
+    </div>
+
+    <!-- Continue Learning Card with animated circular 68% progress ring -->
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; overflow: hidden;">
+      <div>
+        <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 4px;">CONTINUE LEARNING</span>
+        <div style="font-size: 15px; font-weight: 800; color: #fff;">Algebra - Linear Equations</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">3/5 done</div>
+        <div style="color: var(--gold); font-size: 12px; font-weight: 700; margin-top: 8px; cursor: pointer;" onclick="goToScreen(4)">
+          Continue &gt;
+        </div>
+      </div>
+
+      <!-- Circular 68% Progress Ring -->
+      <div style="position: relative; width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg viewBox="0 0 64 64" style="width: 100%; height: 100%; transform: rotate(-90deg);">
+          <circle cx="32" cy="32" r="26" stroke="#1E2838" stroke-width="5" fill="none" />
+          <circle cx="32" cy="32" r="26" stroke="var(--gold)" stroke-width="5" stroke-dasharray="163.36" stroke-dashoffset="52.27" stroke-linecap="round" fill="none" />
+        </svg>
+        <span style="position: absolute; font-size: 13px; font-weight: 800; color: var(--gold);">68%</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions row: 4 tiles -->
+    <div style="margin-bottom: 18px;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">Quick Actions</div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+        <div class="card" style="padding: 12px 6px; text-align: center; cursor: pointer;" onclick="goToScreen(4)">
+          <div style="font-size: 20px; margin-bottom: 4px;">⚡</div>
+          <div style="font-size: 10px; font-weight: 700; color: #fff;">Practice</div>
+        </div>
+        <div class="card" style="padding: 12px 6px; text-align: center; cursor: pointer;" onclick="goToScreen(5)">
+          <div style="font-size: 20px; margin-bottom: 4px;">📸</div>
+          <div style="font-size: 10px; font-weight: 700; color: #fff;">Camera</div>
+        </div>
+        <div class="card" style="padding: 12px 6px; text-align: center; cursor: pointer;" onclick="goToScreen(4)">
+          <div style="font-size: 20px; margin-bottom: 4px;">🎯</div>
+          <div style="font-size: 10px; font-weight: 700; color: #fff;">Missions</div>
+        </div>
+        <div class="card" style="padding: 12px 6px; text-align: center; cursor: pointer;" onclick="goToScreen(10)">
+          <div style="font-size: 20px; margin-bottom: 4px;">🤖</div>
+          <div style="font-size: 10px; font-weight: 700; color: #fff;">AI Assistant</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Mission Card -->
+    <div class="card" style="border-color: rgba(255,199,0,0.3); margin-bottom: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span class="tag-badge" style="background: rgba(0, 230, 118, 0.15); color: var(--green);">TODAY'S MISSION</span>
+        <span style="font-size: 11px; color: var(--text-muted);">⏱️ 10 mins</span>
+      </div>
+      <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px;">Retail Queue Bottleneck</div>
+      <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 14px;">
+        Analyze customer delay during peak hours, observe root causes, and verbally defend your systemic mitigation.
+      </p>
+      <button class="btn-gold" onclick="goToScreen(4)">
+        START MISSION →
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: MISSION BRIEF -->
+  <div class="screen" id="screen4" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 6px;">MISSION 03 BRIEF</span>
+      <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px;">Rules of Proof</h2>
+      <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 18px;">
+        Prove understanding through observation, inquiry, hypothesis, and defense:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div class="card" style="padding: 12px; display: flex; gap: 12px; align-items: center;">
+          <span style="font-size: 20px;">👁️</span>
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: #fff;">1. Observe</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Identify patterns and bottlenecks in the visual context.</div>
+          </div>
+        </div>
+        <div class="card" style="padding: 12px; display: flex; gap: 12px; align-items: center;">
+          <span style="font-size: 20px;">❓</span>
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: #fff;">2. Ask</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Interview stakeholders to separate symptoms from causes.</div>
+          </div>
+        </div>
+        <div class="card" style="padding: 12px; display: flex; gap: 12px; align-items: center;">
+          <span style="font-size: 20px;">💡</span>
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: #fff;">3. Hypothesize</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Formulate systemic solution theories.</div>
+          </div>
+        </div>
+        <div class="card" style="padding: 12px; display: flex; gap: 12px; align-items: center;">
+          <span style="font-size: 20px;">🛡️</span>
+          <div>
+            <div style="font-size: 13px; font-weight: 800; color: #fff;">4. Defend</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Verbally articulate and defend against AI counter-challenges.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor-primed indicators -->
+      <div class="card" style="background: #0E131C; padding: 12px; display: flex; justify-content: space-around; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); font-weight: 700;">
+          <span>📸</span> Camera Primed
+        </div>
+        <div style="width: 1px; height: 16px; background: var(--card-border);"></div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); font-weight: 700;">
+          <span>🎙️</span> Mic Primed
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(5)" style="margin-top: 20px;">
+      Begin Mission →
+    </button>
+  </div>
+
+  <!-- SCREEN 5: CAMERA SCREEN (simulated) -->
+  <div class="screen" id="screen5" style="justify-content: space-between;">
+    <div>
+      <div style="font-size: 11px; font-weight: 700; color: var(--gold); text-transform: uppercase; margin-bottom: 4px;">Step 1: Observe</div>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 12px;">Capture System View</h2>
+    </div>
+
+    <!-- Mock Viewfinder -->
+    <div style="position: relative; width: 100%; height: 380px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #09121D 0%, #03060B 100%); border: 2px solid var(--card-border); display: flex; flex-direction: column; justify-content: space-between; padding: 16px;">
+      <!-- Overlay badge -->
+      <div style="align-self: flex-start; background: rgba(0, 229, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan); font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+        <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--cyan);"></div>
+        AI CONTEXT: ACTIVE
+      </div>
+
+      <!-- Center Crosshairs -->
+      <div style="align-self: center; width: 180px; height: 180px; border: 2px dashed rgba(255,199,0,0.3); border-radius: 14px; display: flex; align-items: center; justify-content: center; text-align: center; color: rgba(255,199,0,0.6); font-size: 11px; padding: 10px;">
+        [ Align Retail Queue & POS Register Area ]
+      </div>
+
+      <div style="text-align: center; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 12px; align-self: center;">
+        Tap shutter to analyze frame
+      </div>
+    </div>
+
+    <!-- Capture Button -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 16px;">
+      <button onclick="goToScreen(6)" style="width: 68px; height: 68px; border-radius: 50%; border: 4px solid var(--gold); background: #000; padding: 4px; cursor: pointer; box-shadow: 0 0 24px var(--gold-glow);">
+        <div style="width: 100%; height: 100%; border-radius: 50%; background: var(--gold);"></div>
+      </button>
+      <span style="font-size: 11px; color: var(--text-muted);">Capture Frame</span>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: VOICE INVESTIGATION -->
+  <div class="screen" id="screen6" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 6px;">STEP 2: INVESTIGATE</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Voice Investigation</h2>
+      <p style="font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 14px;">
+        "What would you investigate first?"
+      </p>
+
+      <div class="waveform-box">
+        <div class="wave-bars animated">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+        <button class="btn-outline" style="padding: 8px 16px; font-size: 11px;" onclick="toggleVoiceInput('voiceInput1')">
+          🎙️ Tap to Speak (Simulated)
+        </button>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">
+          OR TYPE YOUR ANSWER:
+        </label>
+        <textarea id="voiceInput1" rows="4">I would investigate barcode scanning failure rates and bagger availability rather than just counting open registers.</textarea>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(7)" style="margin-top: 16px;">
+      Submit Investigation →
+    </button>
+  </div>
+
+  <!-- SCREEN 7: INTERVIEW SCREEN -->
+  <div class="screen" id="screen7" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); margin-bottom: 6px;">STEP 3: INTERVIEW</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Stakeholder Interview</h2>
+      <p style="font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 14px;">
+        "Interview one person. What did you learn?"
+      </p>
+
+      <div class="waveform-box">
+        <div class="wave-bars animated">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+        <button class="btn-outline" style="padding: 8px 16px; font-size: 11px;" onclick="toggleVoiceInput('voiceInput2')">
+          🎙️ Tap to Speak (Simulated)
+        </button>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">
+          RECORDED LEARNINGS:
+        </label>
+        <textarea id="voiceInput2" rows="4">Cashier Maria stated that price check overrides require manager keycard authorization, which stalls checkout lines for 3–4 minutes per occurrence.</textarea>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(8)" style="margin-top: 16px;">
+      Submit Findings →
+    </button>
+  </div>
+
+  <!-- SCREEN 8: DEFEND SOLUTION -->
+  <div class="screen" id="screen8" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 6px;">STEP 4: HYPOTHESIZE</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Defend Solution</h2>
+      <p style="font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 14px;">
+        "Give one solution and defend it."
+      </p>
+
+      <div class="card" style="margin-bottom: 14px;">
+        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">PROPOSED MITIGATION:</label>
+        <textarea rows="5">Implement handheld digital price-override terminals for team leads, enabling instant wireless approvals at register stations without requiring physical manager travel.</textarea>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(9)" style="margin-top: 16px;">
+      Submit Defense →
+    </button>
+  </div>
+
+  <!-- SCREEN 9: AI ADAPTIVE FOLLOW-UP -->
+  <div class="screen" id="screen9" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 77, 79, 0.15); color: var(--red); margin-bottom: 6px;">AI ADAPTIVE CHALLENGE</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 12px;">Counter-Argument</h2>
+
+      <div class="card" style="border-color: rgba(255,77,79,0.4); background: #181216; margin-bottom: 16px;">
+        <div style="font-size: 14px; font-weight: 800; color: #fff; line-height: 1.4;">
+          "Why wouldn't simply adding another cashier solve the root problem?"
+        </div>
+      </div>
+
+      <div class="card">
+        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">YOUR REBUTTAL:</label>
+        <textarea rows="4">Adding cashiers increases labor cost without resolving the approval bottleneck. Every new cashier would still experience the same price-check queue block.</textarea>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="startAiAnalysis()" style="margin-top: 16px;">
+      Lock In Defense →
+    </button>
+  </div>
+
+  <!-- SCREEN 10: AI ANALYSIS SCREEN -->
+  <div class="screen" id="screen10" style="justify-content: center; align-items: center; text-align: center;">
+    <div style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid rgba(0, 229, 255, 0.2); border-top-color: var(--cyan); animation: spin 1s infinite linear; margin-bottom: 24px;"></div>
+    
+    <h2 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px;">Gemini Reasoning Engine</h2>
+    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 24px;">Evaluating multimodal evidence and response depth</p>
+
+    <div class="card" style="width: 100%; text-align: left; display: flex; flex-direction: column; gap: 14px;">
+      <div id="aiStage1" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+        <span style="display: inline-block; width: 18px;">1.</span> Understanding context...
+      </div>
+      <div id="aiStage2" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+        <span style="display: inline-block; width: 18px;">2.</span> Analyzing response...
+      </div>
+      <div id="aiStage3" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+        <span style="display: inline-block; width: 18px;">3.</span> Mapping competencies...
+      </div>
+      <div id="aiStage4" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+        <span style="display: inline-block; width: 18px;">4.</span> Preparing feedback...
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 11: SKILL REVIEW SCREEN -->
+  <div class="screen" id="screen11" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 6px;">COMPETENCY DIAGNOSTIC</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 12px;">Skill Review</h2>
+
+      <!-- 5 Horizontal Skill Bars -->
+      <div class="card" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;">
+        <!-- Problem Framing 88 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+            <span>Problem Framing</span>
+            <span style="color: var(--gold);">88%</span>
+          </div>
+          <div style="height: 6px; background: #1E2838; border-radius: 3px; overflow: hidden;">
+            <div style="width: 88%; height: 100%; background: var(--gold);"></div>
+          </div>
+        </div>
+
+        <!-- Question Quality 74 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+            <span>Question Quality</span>
+            <span style="color: var(--gold);">74%</span>
+          </div>
+          <div style="height: 6px; background: #1E2838; border-radius: 3px; overflow: hidden;">
+            <div style="width: 74%; height: 100%; background: var(--gold);"></div>
+          </div>
+        </div>
+
+        <!-- Root-Cause Reasoning 61 (Weakest) -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span>Root-Cause Reasoning</span>
+              <span style="font-size: 9px; background: rgba(255,77,79,0.2); color: var(--red); border: 1px solid rgba(255,77,79,0.4); padding: 1px 6px; border-radius: 6px;">Weakest Competency</span>
+            </div>
+            <span style="color: var(--red);">61%</span>
+          </div>
+          <div style="height: 6px; background: #1E2838; border-radius: 3px; overflow: hidden;">
+            <div style="width: 61%; height: 100%; background: var(--red);"></div>
+          </div>
+        </div>
+
+        <!-- Communication 84 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+            <span>Communication</span>
+            <span style="color: var(--gold);">84%</span>
+          </div>
+          <div style="height: 6px; background: #1E2838; border-radius: 3px; overflow: hidden;">
+            <div style="width: 84%; height: 100%; background: var(--gold);"></div>
+          </div>
+        </div>
+
+        <!-- Decision Quality 79 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+            <span>Decision Quality</span>
+            <span style="color: var(--gold);">79%</span>
+          </div>
+          <div style="height: 6px; background: #1E2838; border-radius: 3px; overflow: hidden;">
+            <div style="width: 79%; height: 100%; background: var(--gold);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback & Corrective Challenge -->
+      <div class="card" style="background: #141A26; margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 4px;">AI Diagnostic Feedback:</div>
+        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          "You moved toward a solution before validating multiple possible causes."
+        </p>
+        <div style="border-top: 1px solid var(--card-border); padding-top: 8px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--gold); margin-bottom: 2px;">Corrective Challenge:</div>
+          <p style="font-size: 12px; color: #fff; line-height: 1.4;">
+            "Before choosing a solution, identify 2 possible causes and explain how you would test each."
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(12)" style="margin-top: 16px;">
+      Start Corrective Retry →
+    </button>
+  </div>
+
+  <!-- SCREEN 12: CORRECTIVE RETRY MISSION -->
+  <div class="screen" id="screen12" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(0, 229, 255, 0.15); color: var(--cyan); margin-bottom: 6px;">CORRECTIVE RETRY</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">Identify 2 Causes</h2>
+      <p style="font-size: 12.5px; color: var(--gold); font-weight: 700; margin-bottom: 14px;">
+        "Identify 2 possible causes and explain how you would test each."
+      </p>
+
+      <div class="card">
+        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 6px;">CORRECTIVE TEST PLAN:</label>
+        <textarea rows="6">Cause 1: Outdated barcode scanner laser sensitivity. Test: Measure scan fail rate across lanes over 200 scans.
+
+Cause 2: Cashier register training deficit. Test: Compare transaction time between senior vs newly onboarded cashiers.</textarea>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="startScoreCountUp()" style="margin-top: 16px;">
+      Submit Corrective Response →
+    </button>
+  </div>
+
+  <!-- SCREEN 13: SCORE IMPROVEMENT SCREEN -->
+  <div class="screen" id="screen13" style="justify-content: center; align-items: center; text-align: center;">
+    <span class="tag-badge" style="background: rgba(0, 230, 118, 0.15); color: var(--green); margin-bottom: 8px;">VERIFIED PROGRESS</span>
+    <h2 style="font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 4px;">Score Improvement</h2>
+    
+    <div class="card" style="width: 100%; margin: 24px 0; padding: 28px 16px;">
+      <div style="display: flex; justify-content: center; align-items: center; gap: 24px;">
+        <div>
+          <div style="font-size: 32px; font-weight: 800; color: var(--text-muted);">61</div>
+          <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">INITIAL</div>
+        </div>
+        <div style="font-size: 24px; color: var(--green);">➔</div>
+        <div>
+          <div id="countScore" style="font-size: 52px; font-weight: 900; color: var(--gold);">61</div>
+          <div style="font-size: 10px; color: var(--gold); font-weight: 700;">VERIFIED</div>
+        </div>
+      </div>
+
+      <div id="badgeDelta" style="display: inline-block; background: rgba(0, 230, 118, 0.15); border: 1px solid var(--green); color: var(--green); font-size: 14px; font-weight: 800; padding: 6px 16px; border-radius: 20px; margin-top: 16px; opacity: 0; transition: opacity 0.4s ease;">
+        +17%
+      </div>
+
+      <p style="font-size: 13px; color: var(--text-secondary); margin-top: 14px; font-weight: 500;">
+        "Your reasoning became more evidence-driven."
+      </p>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(14)">
+      Mint Verified Proof Card 🛡️ →
+    </button>
+  </div>
+
+  <!-- SCREEN 14: VERIFIED PROOF CARD -->
+  <div class="screen" id="screen14" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 6px;">VERIFIABLE CREDENTIAL</span>
+      <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 12px;">Verified Proof Card</h2>
+
+      <!-- Certificate Card -->
+      <div class="card" style="border: 2px solid var(--gold); background: linear-gradient(135deg, #182030, #0E131C); position: relative; box-shadow: 0 10px 30px var(--gold-glow); padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 12px;">
+          <span style="font-size: 11px; font-weight: 900; color: var(--gold); letter-spacing: 0.5px;">PROOFLOOP MASTERY</span>
+          <span style="font-size: 9px; color: var(--cyan); font-family: 'JetBrains Mono', monospace;">SHA256: 0x8F2A...E91C</span>
+        </div>
+
+        <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 2px;">Retail Queue Bottleneck</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px;">Earner: Murali Ganesh</div>
+
+        <!-- 3 Metrics -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; margin-bottom: 16px;">
+          <div style="background: #0A0C11; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px;">
+            <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase;">Application</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--green);">78%</div>
+          </div>
+          <div style="background: #0A0C11; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px;">
+            <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase;">Reasoning</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--gold);">78%</div>
+          </div>
+          <div style="background: #0A0C11; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px;">
+            <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase;">Communication</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--cyan);">84%</div>
+          </div>
+        </div>
+
+        <!-- Checklist of demonstrated capabilities -->
+        <div style="font-size: 11px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px; border-top: 1px dashed var(--card-border); padding-top: 12px;">
+          <div>✓ Formulated testable dual-cause hypothesis</div>
+          <div>✓ Defended against cashier scaling assumption</div>
+          <div>✓ Verified evidence-driven corrective mitigation</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+      <button class="btn-outline" onclick="showShareToast()">
+        <span>📤</span> Share Proof Card
+      </button>
+      <button class="btn-gold" onclick="goToScreen(15)">
+        View Skill Dashboard →
+      </button>
+    </div>
+  </div>
+
+  <!-- SCREEN 15: SKILL DASHBOARD -->
+  <div class="screen" id="screen15" style="justify-content: space-between;">
+    <div>
+      <span class="tag-badge" style="background: rgba(255, 199, 0, 0.15); color: var(--gold); margin-bottom: 6px;">LEARNER SUMMARY</span>
+      <h2 style="font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 14px;">Skill Dashboard</h2>
+
+      <!-- 3 Summary stats -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;">
+        <div class="card" style="text-align: center; padding: 12px 6px;">
+          <div style="font-size: 24px; font-weight: 900; color: #fff;">6</div>
+          <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Missions Completed</div>
+        </div>
+        <div class="card" style="text-align: center; padding: 12px 6px;">
+          <div style="font-size: 24px; font-weight: 900; color: var(--cyan);">4</div>
+          <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Skills Practiced</div>
+        </div>
+        <div class="card" style="text-align: center; padding: 12px 6px;">
+          <div style="font-size: 24px; font-weight: 900; color: var(--green);">+17%</div>
+          <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Average Improvement</div>
+        </div>
+      </div>
+
+      <!-- Recent Verified Proofs List -->
+      <div class="card" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 12px; font-weight: 800; color: #fff; margin-bottom: 2px;">Verified Proof Cards:</div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #0E131C; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🛡️</span>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #fff;">Retail Queue Bottleneck</div>
+              <div style="font-size: 10px; color: var(--text-muted);">Root-Cause Verified</div>
+            </div>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; color: var(--green);">+17%</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #0E131C; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🛡️</span>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #fff;">Binary Search Invariant</div>
+              <div style="font-size: 10px; color: var(--text-muted);">Boundary Defense</div>
+            </div>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; color: var(--green);">+18%</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #0E131C; padding: 10px; border-radius: 10px; border: 1px solid var(--card-border);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">🛡️</span>
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #fff;">Concurrent Mutex Contention</div>
+              <div style="font-size: 10px; color: var(--text-muted);">Memory Barrier Verified</div>
+            </div>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; color: var(--green);">+16%</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-gold" onclick="goToScreen(3)" style="margin-top: 20px;">
+      Back to Home →
+    </button>
+  </div>
+
+  <!-- Bottom Navigation Bar: 5 tabs (visible on screen 3 onwards) -->
+  <div class="bottom-nav" id="bottomNav" style="display: none;">
+    <button class="bottom-tab active" onclick="goToScreen(3)">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </button>
+    <button class="bottom-tab" onclick="goToScreen(15)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      Skills
+    </button>
+    <button class="bottom-tab" onclick="goToScreen(4)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+      Missions
+    </button>
+    <button class="bottom-tab" onclick="goToScreen(4)">
+      <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+      Practice
+    </button>
+    <button class="bottom-tab" onclick="goToScreen(11)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+      Progress
+    </button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="shareToast">
+    🛡️ Proof Card link copied to clipboard!
+  </div>
+</div>
+
+<script>
+  let currentScreen = 1;
+
+  function goToScreen(screenNumber) {
+    // Hide all screens
+    for (let i = 1; i <= 15; i++) {
+      const el = document.getElementById('screen' + i);
+      if (el) el.classList.remove('active');
+    }
+
+    // Show target screen
+    const target = document.getElementById('screen' + screenNumber);
+    if (target) target.classList.add('active');
+
+    currentScreen = screenNumber;
+
+    // Update judge step select
+    const select = document.getElementById('stepSelect');
+    if (select) select.value = String(screenNumber);
+
+    // Show/hide bottom nav bar (only on screen 3 onwards, except during splash & camera)
+    const bottomNav = document.getElementById('bottomNav');
+    if (screenNumber >= 3 && screenNumber !== 5 && screenNumber !== 10) {
+      bottomNav.style.display = 'flex';
+    } else {
+      bottomNav.style.display = 'none';
+    }
+
+    // Scroll to top of frame
+    const frame = document.querySelector('.mobile-frame');
+    if (frame) frame.scrollTop = 0;
+  }
+
+  function jumpToScreen(num) {
+    goToScreen(num);
+  }
+
+  // SCREEN 1 Splash Animation & Auto-Advance
+  window.addEventListener('DOMContentLoaded', () => {
+    const splashLogo = document.getElementById('splashLogo');
+    setTimeout(() => {
+      if (splashLogo) {
+        splashLogo.style.opacity = '1';
+        splashLogo.style.transform = 'translateY(0)';
+      }
+    }, 100);
+
+    // Auto-advance to Login after 2.2 seconds
+    setTimeout(() => {
+      if (currentScreen === 1) {
+        goToScreen(2);
+      }
+    }, 2200);
+
+    // Tap to skip
+    document.getElementById('screen1').addEventListener('click', () => {
+      if (currentScreen === 1) goToScreen(2);
+    });
+  });
+
+  // SCREEN 10 AI Analysis sequential checklist
+  function startAiAnalysis() {
+    goToScreen(10);
+    const s1 = document.getElementById('aiStage1');
+    const s2 = document.getElementById('aiStage2');
+    const s3 = document.getElementById('aiStage3');
+    const s4 = document.getElementById('aiStage4');
+
+    s1.style.color = 'var(--text-muted)';
+    s2.style.color = 'var(--text-muted)';
+    s3.style.color = 'var(--text-muted)';
+    s4.style.color = 'var(--text-muted)';
+
+    setTimeout(() => {
+      s1.innerHTML = '<span style="color: var(--green);">✓</span> 1. Understanding context';
+      s1.style.color = 'var(--green)';
+    }, 600);
+
+    setTimeout(() => {
+      s2.innerHTML = '<span style="color: var(--green);">✓</span> 2. Analyzing response';
+      s2.style.color = 'var(--green)';
+    }, 1400);
+
+    setTimeout(() => {
+      s3.innerHTML = '<span style="color: var(--green);">✓</span> 3. Mapping competencies';
+      s3.style.color = 'var(--green)';
+    }, 2200);
+
+    setTimeout(() => {
+      s4.innerHTML = '<span style="color: var(--gold);">✓</span> 4. Preparing feedback...';
+      s4.style.color = 'var(--gold)';
+    }, 3000);
+
+    // Auto-advance to Skill Review
+    setTimeout(() => {
+      goToScreen(11);
+    }, 3800);
+  }
+
+  // SCREEN 13 Score Improvement Animated Count-Up
+  function startScoreCountUp() {
+    goToScreen(13);
+    const countEl = document.getElementById('countScore');
+    const deltaBadge = document.getElementById('badgeDelta');
+    deltaBadge.style.opacity = '0';
+
+    let current = 61;
+    const target = 78;
+    const stepDuration = 1500 / (target - current);
+
+    const timer = setInterval(() => {
+      current++;
+      countEl.innerText = String(current);
+      if (current >= target) {
+        clearInterval(timer);
+        deltaBadge.style.opacity = '1';
+      }
+    }, stepDuration);
+  }
+
+  // Simulated Voice Input trigger
+  function toggleVoiceInput(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.borderColor = 'var(--gold)';
+    setTimeout(() => {
+      el.style.borderColor = 'var(--card-border)';
+    }, 800);
+  }
+
+  // Mock Share Toast
+  function showShareToast() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'ProofLoop Verified Credential',
+        text: 'I just proved root-cause reasoning on ProofLoop with +17% improvement!',
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      const toast = document.getElementById('shareToast');
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+  }
+
+  // Keyframes
+  const style = document.createElement('style');
+  style.innerHTML = '@keyframes spin { to { transform: rotate(360deg); } }';
+  document.head.appendChild(style);
+</script>
+</body>
 </html>
