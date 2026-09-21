@@ -30,10 +30,12 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.TrackChanges
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -78,6 +80,8 @@ fun ProfileScreen(
     val userEmail = session?.email?.ifBlank { "murali.student@iqoo.edu" } ?: "murali.student@iqoo.edu"
 
     var notificationsEnabled by remember { mutableStateOf(true) }
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -238,8 +242,8 @@ fun ProfileScreen(
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
             }
 
-            ProfileMenuItem(icon = Icons.AutoMirrored.Filled.Help, label = "Help & Support", onClick = {})
-            ProfileMenuItem(icon = Icons.Default.Info, label = "About ProofLoop", onClick = {})
+            ProfileMenuItem(icon = Icons.AutoMirrored.Filled.Help, label = "Help & Support", onClick = { showHelpDialog = true })
+            ProfileMenuItem(icon = Icons.Default.Info, label = "About ProofLoop", onClick = { showAboutDialog = true })
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -277,6 +281,42 @@ fun ProfileScreen(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+    }
+
+    // Help Dialog
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text("Help & Support", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("How ProofLoop Works", color = ProofLoopYellow, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text("• Complete missions to earn Proof Cards\n• Unlock new skills by finishing prerequisites\n• Answer adaptive questions to prove mastery\n• Retry missions to improve your score\n\nFor help or feedback:\n?? support@proofloop.app\n?? discord.gg/proofloop", color = TextSecondary, fontSize = 13.sp)
+                }
+            },
+            confirmButton = { TextButton(onClick = { showHelpDialog = false }) { Text("Got it", color = ProofLoopYellow) } },
+            containerColor = ProofLoopCardBg,
+            tonalElevation = 0.dp
+        )
+    }
+
+    // About Dialog
+    if (showAboutDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            title = { Text("About ProofLoop", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("ProofLoop v1.0", color = ProofLoopYellow, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text("ProofLoop is a mastery-based learning platform that replaces passive study with active proof.\n\nInstead of just watching or reading, you solve real problems, defend your reasoning, and earn Proof Cards — verifiable evidence of genuine understanding.\n\nBuilt with Jetpack Compose · Kotlin · Gemini AI\nDesigned for hackathon judges and real learners alike.\n\n© 2025 ProofLoop Team", color = TextSecondary, fontSize = 13.sp)
+                }
+            },
+            confirmButton = { TextButton(onClick = { showAboutDialog = false }) { Text("Close", color = ProofLoopYellow) } },
+            containerColor = ProofLoopCardBg,
+            tonalElevation = 0.dp
+        )
     }
 }
 

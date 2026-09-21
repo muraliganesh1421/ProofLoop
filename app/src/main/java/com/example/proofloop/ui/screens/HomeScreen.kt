@@ -305,21 +305,22 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Small circular progress ring (68%)
-                    MiniCircularProgress(progress = liveScore, size = 52)
+                    // Small circular progress ring (0% if fresh, or liveScore)
+                    val displayProgress = if (totalAttempts == 0) 0 else liveScore
+                    MiniCircularProgress(progress = displayProgress, size = 52)
 
                     Spacer(modifier = Modifier.width(14.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Algebra - Linear Equations",
+                            text = if (totalAttempts == 0) "Start Your First Mission" else "Algebra - Linear Equations",
                             color = TextPrimary,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "3/5 questions done",
+                            text = if (totalAttempts == 0) "Tap to begin problem solving" else "$correctAttempts/$totalAttempts questions completed",
                             color = TextMuted,
                             fontSize = 12.sp
                         )
@@ -335,7 +336,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Continue >",
+                            text = if (totalAttempts == 0) "Start >" else "Continue >",
                             color = Color.Black,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold

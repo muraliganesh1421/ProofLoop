@@ -60,31 +60,37 @@ fun AiAnalysisScreen(
         stage = 3 // Preparing feedback
 
         val service = AiServiceProvider.getService()
-        if (!isRetry) {
-            val result = service.evaluateFirstAttempt(
-                mission = mission,
-                investigationAnswer = attempt.firstAnswer,
-                interviewAnswer = attempt.interviewAnswer,
-                solutionAnswer = attempt.solutionAnswer,
-                followUpAnswer = attempt.followUpAnswer
-            )
-            result.onSuccess { eval ->
-                MissionRepository.setFirstEvaluation(eval)
-            }.onFailure {
-                // Fallback guaranteed by DemoAiService
+        try {
+            kotlinx.coroutines.withTimeoutOrNull(6000L) {
+                if (!isRetry) {
+                    val result = service.evaluateFirstAttempt(
+                        mission = mission,
+                        investigationAnswer = attempt.firstAnswer,
+                        interviewAnswer = attempt.interviewAnswer,
+                        solutionAnswer = attempt.solutionAnswer,
+                        followUpAnswer = attempt.followUpAnswer
+                    )
+                    result.onSuccess { eval ->
+                        MissionRepository.setFirstEvaluation(eval)
+                    }.onFailure {
+                        // Fallback guaranteed by DemoAiService
+                    }
+                } else {
+                    val prev = firstEval ?: com.example.proofloop.data.local.SampleData.initialProofCard.let {
+                        com.example.proofloop.domain.models.SkillEvaluation()
+                    }
+                    val result = service.evaluateCorrectiveAttempt(
+                        mission = mission,
+                        previousEvaluation = prev,
+                        correctiveAnswer = attempt.correctiveAnswer
+                    )
+                    result.onSuccess { eval ->
+                        MissionRepository.setSecondEvaluation(eval)
+                    }
+                }
             }
-        } else {
-            val prev = firstEval ?: com.example.proofloop.data.local.SampleData.initialProofCard.let {
-                com.example.proofloop.domain.models.SkillEvaluation()
-            }
-            val result = service.evaluateCorrectiveAttempt(
-                mission = mission,
-                previousEvaluation = prev,
-                correctiveAnswer = attempt.correctiveAnswer
-            )
-            result.onSuccess { eval ->
-                MissionRepository.setSecondEvaluation(eval)
-            }
+        } catch (_: Exception) {
+            // Safety net: never block the user
         }
 
         stage = 4

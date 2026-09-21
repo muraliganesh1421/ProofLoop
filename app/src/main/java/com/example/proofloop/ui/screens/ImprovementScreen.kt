@@ -1,4 +1,4 @@
-﻿package com.example.proofloop.ui.screens
+package com.example.proofloop.ui.screens
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateIntAsState
@@ -62,9 +62,14 @@ fun ImprovementScreen(
     val firstEval by MissionRepository.firstEvaluation.collectAsState()
     val currentMission by MissionRepository.currentMission.collectAsState()
 
-    val beforeScore = 61
-    val targetAfterScore = 78
-    val deltaPercent = targetAfterScore - beforeScore
+    val isHighScorerSkippedRetry = (firstEval?.overallScore ?: 0) >= 85
+    val beforeScore = if (isHighScorerSkippedRetry) (firstEval?.overallScore ?: 88) else 61
+    val targetAfterScore = when {
+        isHighScorerSkippedRetry -> (firstEval?.overallScore ?: 88)
+        secondEval != null -> secondEval?.overallScore ?: 78
+        else -> 78
+    }
+    val deltaPercent = (targetAfterScore - beforeScore).coerceAtLeast(0)
 
     val beforeScores = ScoringEngine.initialAttemptScores
     val afterScores = ScoringEngine.correctiveAttemptScores
@@ -110,7 +115,7 @@ fun ImprovementScreen(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "COMPETENCY GAP CLOSED",
+                    text = if (isHighScorerSkippedRetry) "HIGH MASTERY VERIFIED" else "COMPETENCY GAP CLOSED",
                     color = MintProof,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.ExtraBold,
@@ -122,7 +127,7 @@ fun ImprovementScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "YOU IMPROVED",
+            text = if (isHighScorerSkippedRetry) "TOP TIER REASONING" else "YOU IMPROVED",
             color = TextPrimary,
             fontSize = 30.sp,
             fontWeight = FontWeight.ExtraBold,
@@ -132,10 +137,11 @@ fun ImprovementScreen(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = if (currentMission.isMathMission)
-                "Your mathematical reasoning adapted under percentage price shocks."
-            else
-                "Your reasoning became significantly more evidence-driven.",
+            text = when {
+                isHighScorerSkippedRetry -> "Direct evaluation validated your advanced analytical competency without requiring corrective retry."
+                currentMission.isMathMission -> "Your mathematical reasoning adapted under percentage price shocks."
+                else -> "Your reasoning became significantly more evidence-driven."
+            },
             color = TextSecondary,
             fontSize = 14.sp,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center

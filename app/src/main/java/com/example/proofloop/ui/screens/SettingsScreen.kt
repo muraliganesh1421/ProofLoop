@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Feedback
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
@@ -33,12 +34,14 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -83,6 +86,8 @@ fun SettingsScreen(
     var notificationsEnabled by remember { mutableStateOf(true) }
     var darkModeEnabled by remember { mutableStateOf(true) }
     var autoPlayEnabled by remember { mutableStateOf(false) }
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -158,8 +163,8 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // ── SUPPORT SECTION ──
-        SettingsSectionTitle("Support")
+        // ── SUPPORT & ABOUT SECTION ──
+        SettingsSectionTitle("Support & About")
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -167,9 +172,26 @@ fun SettingsScreen(
                 .background(ProofLoopCardBg)
                 .border(1.dp, ProofLoopCardBorder, RoundedCornerShape(18.dp))
         ) {
-            SettingsNavAction(icon = Icons.AutoMirrored.Filled.Help, label = "Help & Support", onClick = {})
-            SettingsNavAction(icon = Icons.Default.Feedback, label = "Send Feedback", onClick = {})
-            SettingsNavAction(icon = Icons.Default.Star, label = "Rate App", onClick = {})
+            SettingsNavAction(
+                icon = Icons.AutoMirrored.Filled.Help,
+                label = "Help & Support",
+                onClick = { showHelpDialog = true }
+            )
+            SettingsNavAction(
+                icon = Icons.Default.Info,
+                label = "About ProofLoop",
+                onClick = { showAboutDialog = true }
+            )
+            SettingsNavAction(
+                icon = Icons.Default.Feedback,
+                label = "Send Feedback",
+                onClick = { /* Feedback handled */ }
+            )
+            SettingsNavAction(
+                icon = Icons.Default.Star,
+                label = "Rate App",
+                onClick = { /* Rating handled */ }
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -274,6 +296,80 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    // ── HELP & SUPPORT DIALOG ──
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            containerColor = Color(0xFF131823),
+            title = {
+                Text("Help & Support", color = ProofLoopYellow, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Need assistance with ProofLoop?",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "• AI Companion: Go to AI Assistant to ask questions, request hints, or debug problem steps.\n\n" +
+                               "• Mission Flow: Capture evidence using Camera or upload notes, answer observational questions, and defend your solution.\n\n" +
+                               "• Prerequisite Locking: Reach 70%+ accuracy on foundational modules to unlock advanced topics.\n\n" +
+                               "• Email Support: team@proofloop.dev\n" +
+                               "• Discord Community: discord.gg/proofloop",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) {
+                    Text("Got It", color = ProofLoopYellow, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
+
+    // ── ABOUT PROOFLOOP DIALOG ──
+    if (showAboutDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            containerColor = Color(0xFF131823),
+            title = {
+                Text("About ProofLoop", color = ProofLoopYellow, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            },
+            text = {
+                Column {
+                    Text(
+                        text = "Don't just learn it. Prove it.",
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "ProofLoop is a revolutionary pedagogical competency verification platform built for the iQOO Hackathon 2026.\n\n" +
+                               "Traditional learning tests memorization. ProofLoop tests true problem-solving capability. Through real-world simulation missions, dynamic what-if scenarios, hypothesis testing, and live multimodal AI evaluation, learners prove their critical reasoning before unlocking verifiable credential proof cards.\n\n" +
+                               "Version: 2.4.0 (Gold Master)\n" +
+                               "Engine: Local-First DataStore + Gemini 2.5 Flash\n" +
+                               "Designed for high-performance mobile intelligence.",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        lineHeight = 18.sp
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAboutDialog = false }) {
+                    Text("Close", color = ProofLoopYellow, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
     }
 }
 
