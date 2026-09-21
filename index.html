@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ProofLoop — Interactive Web Prototype</title>
+  <meta name="description" content="ProofLoop: Turning passive learning into verifiable mastery. Built with Kotlin, Jetpack Compose, and Gemini AI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0A0C11;
+      --bg-surface: #131722;
+      --card-bg: #131823;
+      --card-border: #222B3D;
+      --card-elevated: #1E2838;
+      --yellow-primary: #FFC700;
+      --yellow-dark: #E5B000;
+      --yellow-glow: rgba(255, 199, 0, 0.2);
+      --cyan-neon: #00E5FF;
+      --cyan-glow: rgba(0, 229, 255, 0.2);
+      --mint-proof: #00E676;
+      --mint-glow: rgba(0, 230, 118, 0.2);
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --phone-w: 390px;
+      --phone-h: 790px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(255, 199, 0, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(0, 229, 255, 0.05) 0%, transparent 40%);
+    }
+
+    /* Outer Container */
+    .app-viewport {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Top Nav for Judges */
+    header.judge-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: rgba(10, 12, 17, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2A2000, #131823);
+      border: 1px solid var(--yellow-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--yellow-primary);
+      font-size: 18px;
+      box-shadow: 0 0 16px var(--yellow-glow);
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
+
+    .hackathon-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid var(--cyan-neon);
+      color: var(--cyan-neon);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-yellow {
+      background: var(--yellow-primary);
+      color: #0A0C11;
+      box-shadow: 0 4px 14px var(--yellow-glow);
+    }
+    .btn-yellow:hover {
+      background: #ffd333;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+    }
+    .btn-ghost:hover {
+      border-color: var(--yellow-primary);
+      color: var(--yellow-primary);
+    }
+
+    /* Main Showcase Layout */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 1fr var(--phone-w) 1fr;
+      gap: 32px;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      align-items: start;
+      flex: 1;
+    }
+
+    /* Left Info Column */
+    .info-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .panel-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .panel-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(255, 199, 0, 0.15);
+      color: var(--yellow-primary);
+      border: 1px solid rgba(255, 199, 0, 0.3);
+    }
+
+    .panel-text {
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .feature-icon {
+      color: var(--yellow-primary);
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .tech-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tech-pill {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--card-elevated);
+      border: 1px solid var(--card-border);
+      color: var(--text-secondary);
+    }
+
+    /* Center: The Phone Mockup */
+    .phone-container {
+      position: relative;
+      width: var(--phone-w);
+      height: var(--phone-h);
+      margin: 0 auto;
+      border-radius: 46px;
+      background: #000;
+      box-shadow: 
+        0 0 0 10px #1a1e29,
+        0 0 0 12px #2b364c,
+        0 24px 64px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(255, 199, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Notch / Dynamic Island */
+    .phone-notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 26px;
+      background: #000;
+      border-radius: 14px;
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 10px;
+    }
+
+    .notch-camera {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #111;
+      border: 1.5px solid #222;
+    }
+
+    .notch-sensor {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #181818;
+    }
+
+    /* Screen Wrapper */
+    .screen-content {
+      flex: 1;
+      background: var(--bg-dark);
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      padding-top: 42px;
+      padding-bottom: 74px;
+      scrollbar-width: none;
+    }
+    .screen-content::-webkit-scrollbar { display: none; }
+
+    /* Phone Status Bar */
+    .phone-status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+      z-index: 90;
+      pointer-events: none;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Bottom Navigation Bar inside Phone */
+    .phone-bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: rgba(19, 24, 35, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 12px 12px 12px;
+      z-index: 90;
+    }
+
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .nav-btn.active {
+      color: var(--yellow-primary);
+    }
+
+    .nav-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    /* Screens Inside Phone */
+    .phone-screen {
+      display: none;
+      flex-direction: column;
+      padding: 16px;
+      min-height: 100%;
+      animation: fadeIn 0.3s ease;
+    }
+    .phone-screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SCREEN: SPLASH SCREEN (Accurate 3-stage animation) */
+    .screen-splash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-dark);
+      z-index: 80;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .splash-wordmark {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .splash-wordmark.animate {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .splash-line {
+      width: 180px;
+      height: 2.5px;
+      background: var(--yellow-primary);
+      margin: 14px 0 16px 0;
+      border-radius: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+      opacity: 0;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+    }
+    .splash-line.animate {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+
+    .splash-tagline {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .splash-tagline.animate {
+      opacity: 1;
+    }
+
+    .splash-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--yellow-primary);
+      border-radius: 50%;
+      margin-top: 36px;
+      transform: scale(0);
+      box-shadow: 0 0 12px var(--yellow-primary);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .splash-dot.animate {
+      transform: scale(1);
+    }
+
+    /* SCREEN: HOME */
+    .home-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .profile-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #2A2000;
+      border: 1.5px solid var(--yellow-primary);
+      color: var(--yellow-primary);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .greeting-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .greeting-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--yellow-primary);
+    }
+
+    /* Continue Learning Card (Dynamic Zero-state / Active) */
+    .continue-card {
+      background: linear-gradient(135deg, #1C2333 0%, #131823 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .continue-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(255,199,0,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .continue-card:hover {
+      border-color: var(--yellow-primary);
+      transform: translateY(-2px);
+    }
+
+    .continue-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .badge-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--yellow-primary);
+    }
+
+    .continue-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .continue-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-ring-box {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-ring-box svg {
+      width: 54px;
+      height: 54px;
+      transform: rotate(-90deg);
+    }
+
+    .ring-bg {
+      stroke: #1E2838;
+      stroke-width: 4;
+      fill: none;
+    }
+
+    .ring-progress {
+      stroke: var(--yellow-primary);
+      stroke-width: 4;
+      stroke-linecap: round;
+      fill: none;
+      stroke-dasharray: 140;
+      stroke-dashoffset: 40; /* 70% */
+      transition: stroke-dashoffset 0.8s ease;
+    }
+
+    .ring-val {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--yellow-primary);
+    }
+
+    /* Section Header */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
+
+    .section-link {
+      font-size: 12px;
+      color: var(--yellow-primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* Missions List */
+    .mission-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mission-item:hover:not(.locked) {
+      border-color: rgba(255, 199, 0, 0.4);
+      background: #181F2E;
+    }
+
+    .mission-item.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+
+    .mission-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #1E2838;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .mission-meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mission-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .mission-tags {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag-chip {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #1E2838;
+      color: var(--text-secondary);
+    }
+
+    .tag-chip.active-chip {
+      background: rgba(0, 229, 255, 0.12);
+      color: var(--cyan-neon);
+    }
+
+    .tag-chip.locked-chip {
+      background: rgba(255, 77, 79, 0.15);
+      color: #FF4D4F;
+    }
+
+    /* SCREEN: MISSION WORKSPACE & VOICE DEFENSE */
+    .screen-workspace {
+      gap: 14px;
+    }
+
+    .mission-brief-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .badge-diff {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: rgba(0, 230, 118, 0.15);
+      color: var(--mint-proof);
+      margin-bottom: 8px;
+    }
+
+    .brief-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .brief-desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .code-editor-sim {
+      background: #0D1017;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #79C0FF;
+    }
+
+    .code-comment { color: #8B949E; }
+    .code-keyword { color: #FF7B72; }
+    .code-fn { color: #D2A8FF; }
+    .code-num { color: #79C0FF; }
+
+    /* Voice Reasoning Module */
+    .voice-defense-box {
+      background: var(--card-bg);
+      border: 1.5px solid rgba(255, 199, 0, 0.3);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(255, 199, 0, 0.05);
+    }
+
+    .voice-prompt {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--yellow-primary);
+    }
+
+    .mic-button-interactive {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2A2000, #181F2E);
+      border: 2px solid var(--yellow-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--yellow-primary);
+      box-shadow: 0 0 20px var(--yellow-glow);
+      transition: all 0.3s;
+    }
+    .mic-button-interactive.recording {
+      animation: pulseMic 1.2s infinite ease-in-out;
+      background: var(--yellow-primary);
+      color: #0A0C11;
+    }
+
+    @keyframes pulseMic {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 199, 0, 0.7); transform: scale(1); }
+      50% { box-shadow: 0 0 0 16px rgba(255, 199, 0, 0); transform: scale(1.06); }
+    }
+
+    .wave-bars {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+    }
+
+    .wave-bar {
+      width: 4px;
+      background: var(--yellow-primary);
+      border-radius: 2px;
+      height: 8px;
+      transition: height 0.15s ease;
+    }
+    .wave-bars.active .wave-bar:nth-child(1) { animation: wave 0.6s infinite ease 0.1s; }
+    .wave-bars.active .wave-bar:nth-child(2) { animation: wave 0.8s infinite ease 0.3s; }
+    .wave-bars.active .wave-bar:nth-child(3) { animation: wave 0.5s infinite ease 0.2s; }
+    .wave-bars.active .wave-bar:nth-child(4) { animation: wave 0.7s infinite ease 0.4s; }
+    .wave-bars.active .wave-bar:nth-child(5) { animation: wave 0.9s infinite ease 0.1s; }
+
+    @keyframes wave {
+      0%, 100% { height: 6px; }
+      50% { height: 22px; }
+    }
+
+    .transcript-box {
+      background: #0E131C;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      text-align: left;
+      width: 100%;
+      min-height: 48px;
+      font-style: italic;
+    }
+
+    /* SCREEN: AI ANALYSIS */
+    .ai-analysis-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+      text-align: center;
+      padding: 24px;
+      gap: 20px;
+    }
+
+    .ai-spinner-box {
+      width: 80px;
+      height: 80px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ai-spinner-ring {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 229, 255, 0.15);
+      border-top-color: var(--cyan-neon);
+      animation: spin 1s infinite linear;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .ai-icon-center {
+      position: absolute;
+      font-size: 28px;
+    }
+
+    .analysis-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .analysis-step-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: color 0.3s;
+    }
+    .analysis-step-row.completed {
+      color: var(--mint-proof);
+    }
+    .analysis-step-row.active {
+      color: var(--yellow-primary);
+      font-weight: 700;
+    }
+
+    /* SCREEN: IMPROVEMENT & SCORE */
+    .score-summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .mastery-badge-gold {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(255, 199, 0, 0.15);
+      border: 1px solid var(--yellow-primary);
+      color: var(--yellow-primary);
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .score-comparison-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 14px 0;
+    }
+
+    .score-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .score-num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .score-num.highlight {
+      color: var(--yellow-primary);
+    }
+
+    .score-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .score-arrow {
+      font-size: 22px;
+      color: var(--mint-proof);
+      font-weight: 800;
+    }
+
+    .delta-badge {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--mint-proof);
+      background: rgba(0, 230, 118, 0.1);
+      padding: 4px 12px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    /* SCREEN: PROOF CARD */
+    .proof-card-holo {
+      background: linear-gradient(135deg, #182030 0%, #10141E 50%, #1A2133 100%);
+      border: 2px solid var(--yellow-primary);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.6),
+        0 0 24px rgba(255, 199, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .proof-card-holo::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 60%
+      );
+      animation: holoSweep 6s infinite linear;
+      pointer-events: none;
+    }
+
+    @keyframes holoSweep {
+      0% { transform: translateY(-30%) rotate(25deg); }
+      100% { transform: translateY(30%) rotate(25deg); }
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-issuer {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--yellow-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .card-verified-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(0, 230, 118, 0.15);
+      border: 1px solid var(--mint-proof);
+      color: var(--mint-proof);
+    }
+
+    .card-skill-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .card-learner {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .card-qr-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px dashed var(--card-border);
+    }
+
+    .qr-mock {
+      width: 60px;
+      height: 60px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-mock svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .card-hash-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .hash-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .hash-val {
+      font-size: 10.5px;
+      color: var(--cyan-neon);
+      word-break: break-all;
+    }
+
+    /* SCREEN: PROGRESS & ANALYTICS */
+    .tab-pill-row {
+      display: flex;
+      background: #10141E;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+
+    .tab-pill-btn {
+      flex: 1;
+      padding: 8px 0;
+      text-align: center;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-pill-btn.active {
+      background: var(--yellow-primary);
+      color: #0A0C11;
+    }
+
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+
+    .skill-bar-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .skill-info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .skill-meter-track {
+      width: 100%;
+      height: 6px;
+      background: #1E2838;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .skill-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--yellow-primary), var(--cyan-neon));
+    }
+
+    /* SCREEN: PROFILE */
+    .profile-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .profile-menu-list {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .menu-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--card-border);
+      cursor: pointer;
+      font-size: 13.5px;
+      transition: background 0.2s;
+    }
+    .menu-row:last-child { border-bottom: none; }
+    .menu-row:hover { background: #181F2E; }
+
+    /* Modal Dialog for Help & About */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 99;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 16px 36px rgba(0,0,0,0.8);
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .modal-sub {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--yellow-primary);
+    }
+
+    .modal-body {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* Right Column: Judge Controls */
+    .controls-column {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .nav-shortcuts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .quick-jump-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text-primary);
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .quick-jump-btn:hover {
+      border-color: var(--yellow-primary);
+      background: #181F2E;
+      transform: translateY(-2px);
+    }
+
+    .quick-jump-btn.active {
+      border-color: var(--yellow-primary);
+      background: rgba(255, 199, 0, 0.08);
+    }
+
+    .jump-icon { font-size: 20px; }
+    .jump-title { font-size: 12.5px; font-weight: 700; }
+    .jump-desc { font-size: 10.5px; color: var(--text-muted); }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .info-column, .controls-column {
+        width: 100%;
+        max-width: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-viewport">
+  <!-- Top Judge Bar -->
+  <header class="judge-bar">
+    <div class="brand-group">
+      <div class="brand-logo-badge">P</div>
+      <div>
+        <div class="brand-title">ProofLoop</div>
+      </div>
+      <span class="hackathon-badge">Hackathon Prototype</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-pill btn-ghost" onclick="triggerSplashAnimation()">
+        <span>✨ Replay Splash</span>
+      </button>
+      <a href="https://github.com/muraliganesh1421/ProofLoop" target="_blank" class="btn-pill btn-ghost">
+        <span>GitHub Repo</span>
+      </a>
+      <a href="./proofloop-debug.apk" download="proofloop-debug.apk" target="_blank" class="btn-pill btn-yellow">
+        <span>Download APK (23.6 MB)</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Showcase Area -->
+  <main class="showcase-grid">
+    <!-- Left Column: Context & Evaluation Criteria -->
+    <div class="info-column">
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3>The Problem & Solution</h3>
+          <span class="panel-tag">Core Value</span>
+        </div>
+        <p class="panel-text">
+          Traditional learning apps allow users to passively watch videos or guess multiple-choice quizzes without proving genuine understanding.
+        </p>
+        <p class="panel-text">
+          <strong>ProofLoop</strong> changes this by forcing users to <em>defend their solutions out loud</em>. The multimodal AI evaluates reasoning depth, unlocks sequential skills through prerequisite verification, and mints cryptographically tamper-proof <strong>Proof Cards</strong>.
+        </p>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3>Key Innovations for Judges</h3>
+          <span class="panel-tag">Hackathon</span>
+        </div>
+        <ul class="feature-list">
+          <li class="feature-item">
+            <span class="feature-icon">🛡️</span>
+            <div><strong>Zero-Config Offline Demo:</strong> Fallback AI ensures judges never get blocked by network or API key issues.</div>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon">🎙️</span>
+            <div><strong>Voice-First Defense:</strong> Verbal reasoning captures true mastery that automated unit tests miss.</div>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon">🔒</span>
+            <div><strong>Prerequisite Enforcing:</strong> Advanced algorithmic missions remain strictly locked until prerequisites are proved.</div>
+          </li>
+          <li class="feature-item">
+            <span class="feature-icon">📜</span>
+            <div><strong>Cryptographic Proof Cards:</strong> Verifiable skill credentials issued with SHA hashes and exportable cards.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3>Production Tech Stack</h3>
+        </div>
+        <div class="tech-badges">
+          <span class="tech-pill">Kotlin 2.2</span>
+          <span class="tech-pill">Jetpack Compose</span>
+          <span class="tech-pill">Material 3</span>
+          <span class="tech-pill">Gemini 1.5 Flash</span>
+          <span class="tech-pill">DataStore</span>
+          <span class="tech-pill">Local-First</span>
+          <span class="tech-pill">Android SDK 35</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Column: Interactive Smartphone Emulator -->
+    <div class="phone-container" id="phoneWrapper">
+      <!-- Notch -->
+      <div class="phone-notch">
+        <div class="notch-camera"></div>
+        <div class="notch-sensor"></div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="phone-status-bar">
+        <span>9:41</span>
+        <div class="status-icons">
+          <span>5G</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <!-- Screen Container -->
+      <div class="screen-content">
+        <!-- 1. SPLASH SCREEN INTRO -->
+        <div class="screen-splash" id="screenSplash">
+          <div class="splash-wordmark" id="splashWordmark">ProofLoop</div>
+          <div class="splash-line" id="splashLine"></div>
+          <div class="splash-tagline" id="splashTagline">Don't just learn it. Prove it.</div>
+          <div class="splash-dot" id="splashDot"></div>
+        </div>
+
+        <!-- 2. HOME SCREEN -->
+        <div class="phone-screen active" id="screenHome">
+          <div class="home-topbar">
+            <div class="profile-pill">
+              <div class="avatar-circle">M</div>
+              <div>
+                <div class="greeting-text">Murali Ganesh</div>
+                <div class="greeting-sub">Student · ProofLoop</div>
+              </div>
+            </div>
+            <div class="stat-pill">
+              <span>🔥 3 Days</span>
+            </div>
+          </div>
+
+          <!-- Continue Learning Banner -->
+          <div class="continue-card" onclick="goToScreen('workspace')">
+            <div class="continue-info">
+              <span class="badge-label">Active Mission</span>
+              <div class="continue-title">Binary Search Mastery</div>
+              <div class="continue-sub">Defend worst-case boundary & invariant</div>
+            </div>
+            <div class="progress-ring-box">
+              <svg viewBox="0 0 54 54">
+                <circle class="ring-bg" cx="27" cy="27" r="22" />
+                <circle class="ring-progress" cx="27" cy="27" r="22" />
+              </svg>
+              <span class="ring-val">70%</span>
+            </div>
+          </div>
+
+          <!-- Missions Section -->
+          <div class="section-title-row">
+            <span class="section-title">Available Missions</span>
+            <span class="section-link">All (3)</span>
+          </div>
+
+          <!-- Mission 1 (Active) -->
+          <div class="mission-item" onclick="goToScreen('workspace')">
+            <div class="mission-icon-box">🔍</div>
+            <div class="mission-meta">
+              <div class="mission-title">1. Binary Search Invariant</div>
+              <div class="mission-tags">
+                <span class="tag-chip active-chip">Ready to Prove</span>
+                <span class="tag-chip">Medium</span>
+                <span class="tag-chip">+150 XP</span>
+              </div>
+            </div>
+            <span style="color: var(--yellow-primary); font-weight: bold;">›</span>
+          </div>
+
+          <!-- Mission 2 (Locked) -->
+          <div class="mission-item locked" onclick="showLockedAlert('Complete Mission 1 (Binary Search) to unlock Knapsack DP!')">
+            <div class="mission-icon-box">🔒</div>
+            <div class="mission-meta">
+              <div class="mission-title">2. Dynamic Programming 0/1</div>
+              <div class="mission-tags">
+                <span class="tag-chip locked-chip">Prerequisite Locked</span>
+                <span class="tag-chip">Hard</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mission 3 (Locked) -->
+          <div class="mission-item locked" onclick="showLockedAlert('Prerequisite not met: Complete DP & Graph Theory first!')">
+            <div class="mission-icon-box">🔒</div>
+            <div class="mission-meta">
+              <div class="mission-title">3. Distributed Consensus Proof</div>
+              <div class="mission-tags">
+                <span class="tag-chip locked-chip">Prerequisite Locked</span>
+                <span class="tag-chip">Expert</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. WORKSPACE & VOICE DEFENSE SCREEN -->
+        <div class="phone-screen screen-workspace" id="screenWorkspace">
+          <div class="mission-brief-card">
+            <span class="badge-diff">Algorithms · Medium</span>
+            <div class="brief-title">Binary Search Correctness</div>
+            <div class="brief-desc">
+              Implement binary search and <strong>verbally defend</strong> why integer overflow does not occur in your midpoint calculation.
+            </div>
+          </div>
+
+          <div class="code-editor-sim">
+            <span class="code-keyword">fun</span> <span class="code-fn">binarySearch</span>(arr: IntArray, target: Int): Int {<br>
+            &nbsp;&nbsp;<span class="code-keyword">var</span> low = <span class="code-num">0</span>; <span class="code-keyword">var</span> high = arr.size - <span class="code-num">1</span><br>
+            &nbsp;&nbsp;<span class="code-keyword">while</span> (low &lt;= high) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Safe midpoint avoids 32-bit overflow:</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">val</span> mid = low + (high - low) / <span class="code-num">2</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> (arr[mid] == target) <span class="code-keyword">return</span> mid<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">else if</span> (arr[mid] &lt; target) low = mid + <span class="code-num">1</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">else</span> high = mid - <span class="code-num">1</span><br>
+            &nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;<span class="code-keyword">return</span> -<span class="code-num">1</span><br>
+            }
+          </div>
+
+          <!-- Interactive Voice Module -->
+          <div class="voice-defense-box">
+            <div class="voice-prompt">🎙️ Defend Your Midpoint Calculation</div>
+            <div class="mic-button-interactive" id="micBtn" onclick="toggleVoiceRecording()">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+              </svg>
+            </div>
+            <div class="wave-bars" id="waveBars">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+            <div class="transcript-box" id="transcriptBox">
+              "Tap the mic to record defense or click 'Simulate Voice' in judge panel."
+            </div>
+            <button class="btn-pill btn-yellow" style="width: 100%; justify-content: center;" onclick="runAiAnalysisFlow()">
+              Submit for AI Verification ›
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. AI ANALYSIS SCREEN -->
+        <div class="phone-screen" id="screenAnalysis">
+          <div class="ai-analysis-container">
+            <div class="ai-spinner-box">
+              <div class="ai-spinner-ring"></div>
+              <div class="ai-icon-center">✨</div>
+            </div>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Gemini AI Evaluation</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);" id="aiStepSubtitle">Analyzing algorithmic defense...</p>
+
+            <div class="analysis-steps">
+              <div class="analysis-step-row" id="step1">
+                <span>✓</span> 1. Validating invariant correctness
+              </div>
+              <div class="analysis-step-row" id="step2">
+                <span>✓</span> 2. Checking boundary & overflow handling
+              </div>
+              <div class="analysis-step-row" id="step3">
+                <span>✓</span> 3. Scoring verbal articulation depth
+              </div>
+              <div class="analysis-step-row" id="step4">
+                <span>✓</span> 4. Minting cryptographic proof hash
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. IMPROVEMENT & SCORECARD SCREEN -->
+        <div class="phone-screen" id="screenImprovement">
+          <div class="score-summary-card">
+            <div class="mastery-badge-gold">HIGH MASTERY VERIFIED</div>
+            <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">Reasoning Proven!</h3>
+            <p style="font-size: 12.5px; color: var(--text-muted);">Defended against 4 edge cases successfully</p>
+
+            <div class="score-comparison-row">
+              <div class="score-box">
+                <span class="score-num">61</span>
+                <span class="score-lbl">First Attempt</span>
+              </div>
+              <div class="score-arrow">➔</div>
+              <div class="score-box">
+                <span class="score-num highlight">78</span>
+                <span class="score-lbl">Defended Score</span>
+              </div>
+            </div>
+
+            <div class="delta-badge">+17% Improvement Demonstrated</div>
+          </div>
+
+          <!-- Breakdown list -->
+          <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Evaluation Breakdown</div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
+              <span style="color: var(--text-secondary);">Algorithmic Rigor</span>
+              <span style="color: var(--yellow-primary); font-weight: 700;">92%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
+              <span style="color: var(--text-secondary);">Verbal Articulation</span>
+              <span style="color: var(--yellow-primary); font-weight: 700;">85%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: var(--text-secondary);">Boundary Defense</span>
+              <span style="color: var(--yellow-primary); font-weight: 700;">89%</span>
+            </div>
+          </div>
+
+          <button class="btn-pill btn-yellow" style="width: 100%; justify-content: center;" onclick="goToScreen('proof')">
+            Generate Proof Card 🛡️
+          </button>
+        </div>
+
+        <!-- 6. PROOF CARD SCREEN -->
+        <div class="phone-screen" id="screenProof">
+          <div class="proof-card-holo">
+            <div class="card-top">
+              <span class="card-issuer">PROOF LOOP CREDENTIAL</span>
+              <span class="card-verified-tag">VERIFIED MASTERY</span>
+            </div>
+
+            <div class="card-skill-title">Binary Search Correctness</div>
+            <div class="card-learner">Issued to: <strong>Murali Ganesh</strong></div>
+
+            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+              This credential certifies that the earner has actively defended the loop invariant, boundary handling, and overflow avoidance.
+            </div>
+
+            <div class="card-qr-row">
+              <div class="qr-mock">
+                <!-- SVG QR Code -->
+                <svg viewBox="0 0 24 24">
+                  <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h4v4h-4v-4zm-4 4h4v4h-4v-4zm4-4h4v4h-4v-4zm-4-4h4v4h-4v-4z" fill="#0A0C11"/>
+                </svg>
+              </div>
+              <div class="card-hash-box">
+                <span class="hash-label">Tamper-Proof Hash</span>
+                <span class="hash-val">0x8f2a...e91c</span>
+                <span style="font-size: 9px; color: var(--text-muted); margin-top: 2px;">Gemini 1.5 · ProofLoop Engine</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-pill btn-yellow" style="width: 100%; justify-content: center; margin-bottom: 10px;" onclick="shareProofCard()">
+            Share Proof Card 📤
+          </button>
+          <button class="btn-pill btn-ghost" style="width: 100%; justify-content: center;" onclick="goToScreen('home')">
+            Return to Missions
+          </button>
+        </div>
+
+        <!-- 7. PROGRESS & SKILLS SCREEN -->
+        <div class="phone-screen" id="screenProgress">
+          <div class="tab-pill-row">
+            <button class="tab-pill-btn active" id="tabBtnOverview" onclick="switchProgressTab('overview')">Overview</button>
+            <button class="tab-pill-btn" id="tabBtnSkills" onclick="switchProgressTab('skills')">Skills</button>
+            <button class="tab-pill-btn" id="tabBtnPerf" onclick="switchProgressTab('perf')">Performance</button>
+          </div>
+
+          <!-- Tab: Overview -->
+          <div class="tab-content active" id="tabOverview">
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 18px; text-align: center;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--yellow-primary); text-transform: uppercase;">Total Mastery Index</div>
+              <div style="font-size: 38px; font-weight: 800; color: var(--text-primary); margin: 6px 0;">78%</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Verified across 6 Core Engineering Competencies</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px;">
+                <div style="font-size: 11px; color: var(--text-muted);">Proofs Minted</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">4 Cards</div>
+              </div>
+              <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px;">
+                <div style="font-size: 11px; color: var(--text-muted);">Mastery Streak</div>
+                <div style="font-size: 22px; font-weight: 800; color: var(--yellow-primary); margin-top: 4px;">3 Days</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Skills -->
+          <div class="tab-content" id="tabSkills">
+            <div class="skill-bar-card">
+              <div class="skill-info-row">
+                <span>Binary Search & Sorting</span>
+                <span style="color: var(--yellow-primary);">88%</span>
+              </div>
+              <div class="skill-meter-track">
+                <div class="skill-meter-fill" style="width: 88%;"></div>
+              </div>
+            </div>
+
+            <div class="skill-bar-card">
+              <div class="skill-info-row">
+                <span>Dynamic Programming</span>
+                <span style="color: var(--cyan-neon);">62%</span>
+              </div>
+              <div class="skill-meter-track">
+                <div class="skill-meter-fill" style="width: 62%;"></div>
+              </div>
+            </div>
+
+            <div class="skill-bar-card">
+              <div class="skill-info-row">
+                <span>Distributed Consensus</span>
+                <span style="color: var(--text-muted);">Locked 🔒</span>
+              </div>
+              <div class="skill-meter-track">
+                <div class="skill-meter-fill" style="width: 15%; background: var(--text-muted);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab: Performance -->
+          <div class="tab-content" id="tabPerf">
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 16px;">
+              <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Reasoning Quality Metrics</div>
+              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                • Average Score Delta: <strong>+17.4%</strong><br>
+                • Edge Case Coverage: <strong>91%</strong><br>
+                • Speech Defense Clarity: <strong>88%</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. PROFILE SCREEN -->
+        <div class="phone-screen" id="screenProfile">
+          <div class="profile-card">
+            <div class="avatar-circle" style="width: 48px; height: 48px; font-size: 18px;">M</div>
+            <div>
+              <div style="font-size: 16px; font-weight: 800;">Murali Ganesh</div>
+              <div style="font-size: 12px; color: var(--text-muted);">murali.student@iqoo.edu</div>
+              <span style="display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #2A2000; color: var(--yellow-primary); margin-top: 4px;">Student</span>
+            </div>
+          </div>
+
+          <div class="profile-menu-list">
+            <div class="menu-row" onclick="openModal('help')">
+              <span>❓ Help & Support</span>
+              <span style="color: var(--text-muted);">›</span>
+            </div>
+            <div class="menu-row" onclick="openModal('about')">
+              <span>ℹ️ About ProofLoop</span>
+              <span style="color: var(--text-muted);">›</span>
+            </div>
+            <div class="menu-row">
+              <span>🌙 Appearance</span>
+              <span style="font-size: 12px; color: var(--text-muted);">Dark Mode</span>
+            </div>
+          </div>
+
+          <button class="btn-pill btn-ghost" style="width: 100%; justify-content: center; border-color: var(--yellow-primary); color: var(--yellow-primary);">
+            Log Out
+          </button>
+        </div>
+
+        <!-- Modal Dialogs (Matching ProfileScreen.kt) -->
+        <div class="modal-overlay" id="modalOverlay">
+          <div class="modal-box" id="modalBox">
+            <div class="modal-title" id="modalTitle">Help & Support</div>
+            <div class="modal-sub" id="modalSub">How ProofLoop Works</div>
+            <div class="modal-body" id="modalBody">
+              • Complete missions to earn Proof Cards<br>
+              • Unlock new skills by finishing prerequisites<br>
+              • Answer adaptive questions to prove mastery<br>
+              • Retry missions to improve your score<br><br>
+              <strong>Contact Support:</strong><br>
+              📧 support@proofloop.app<br>
+              💬 discord.gg/proofloop
+            </div>
+            <button class="btn-pill btn-yellow" style="width: 100%; justify-content: center; margin-top: 6px;" onclick="closeModal()">
+              Got it
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Navigation Bar inside Phone -->
+      <nav class="phone-bottom-nav">
+        <button class="nav-btn active" id="navHome" onclick="goToScreen('home')">
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          Home
+        </button>
+        <button class="nav-btn" id="navSkills" onclick="goToScreen('progress')">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+          Skills
+        </button>
+        <button class="nav-btn" id="navPractice" onclick="goToScreen('workspace')">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+          Mission
+        </button>
+        <button class="nav-btn" id="navProfile" onclick="goToScreen('profile')">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Profile
+        </button>
+      </nav>
+    </div>
+
+    <!-- Right Column: Judge Navigation & Live Actions -->
+    <div class="controls-column">
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3>Judge Screen Switcher</h3>
+          <span class="panel-tag">Quick Jump</span>
+        </div>
+        <p class="panel-text" style="font-size: 12.5px;">
+          Click any screen below to jump directly to that part of the user flow:
+        </p>
+        <div class="nav-shortcuts-grid">
+          <div class="quick-jump-btn" onclick="triggerSplashAnimation()">
+            <span class="jump-icon">✨</span>
+            <span class="jump-title">Splash Intro</span>
+            <span class="jump-desc">Gold sweep & tagline</span>
+          </div>
+          <div class="quick-jump-btn" onclick="goToScreen('home')">
+            <span class="jump-icon">🏠</span>
+            <span class="jump-title">Home Dashboard</span>
+            <span class="jump-desc">Missions & locks</span>
+          </div>
+          <div class="quick-jump-btn" onclick="goToScreen('workspace')">
+            <span class="jump-icon">🎙️</span>
+            <span class="jump-title">Voice Defense</span>
+            <span class="jump-desc">Verbal reasoning</span>
+          </div>
+          <div class="quick-jump-btn" onclick="runAiAnalysisFlow()">
+            <span class="jump-icon">🤖</span>
+            <span class="jump-title">AI Evaluation</span>
+            <span class="jump-desc">Multi-stage check</span>
+          </div>
+          <div class="quick-jump-btn" onclick="goToScreen('improvement')">
+            <span class="jump-icon">📈</span>
+            <span class="jump-title">Score & Delta</span>
+            <span class="jump-desc">61 → 78 (+17%)</span>
+          </div>
+          <div class="quick-jump-btn" onclick="goToScreen('proof')">
+            <span class="jump-icon">🛡️</span>
+            <span class="jump-title">Proof Card</span>
+            <span class="jump-desc">Holo credential</span>
+          </div>
+          <div class="quick-jump-btn" onclick="goToScreen('progress')">
+            <span class="jump-icon">📊</span>
+            <span class="jump-title">Analytics Tabs</span>
+            <span class="jump-desc">Overview & Skills</span>
+          </div>
+          <div class="quick-jump-btn" onclick="goToScreen('profile')">
+            <span class="jump-icon">👤</span>
+            <span class="jump-title">Profile & Help</span>
+            <span class="jump-desc">Modals & context</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3>Simulation Controls</h3>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="btn-pill btn-yellow" style="width: 100%; justify-content: center;" onclick="simulateVoiceInput()">
+            <span>🎤 Simulate Voice Answer</span>
+          </button>
+          <button class="btn-pill btn-ghost" style="width: 100%; justify-content: center;" onclick="openModal('about')">
+            <span>ℹ️ Read 'About ProofLoop'</span>
+          </button>
+          <button class="btn-pill btn-ghost" style="width: 100%; justify-content: center;" onclick="openModal('help')">
+            <span>❓ Read 'Help & Support'</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Screen Navigation Management
+  function goToScreen(screenName) {
+    const screens = document.querySelectorAll('.phone-screen');
+    screens.forEach(s => s.classList.remove('active'));
+
+    const splash = document.getElementById('screenSplash');
+    if (splash) splash.style.display = 'none';
+
+    // Update bottom nav active state
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+    if (screenName === 'home') {
+      document.getElementById('screenHome').classList.add('active');
+      document.getElementById('navHome').classList.add('active');
+    } else if (screenName === 'workspace') {
+      document.getElementById('screenWorkspace').classList.add('active');
+      document.getElementById('navPractice').classList.add('active');
+    } else if (screenName === 'analysis') {
+      document.getElementById('screenAnalysis').classList.add('active');
+    } else if (screenName === 'improvement') {
+      document.getElementById('screenImprovement').classList.add('active');
+    } else if (screenName === 'proof') {
+      document.getElementById('screenProof').classList.add('active');
+    } else if (screenName === 'progress') {
+      document.getElementById('screenProgress').classList.add('active');
+      document.getElementById('navSkills').classList.add('active');
+    } else if (screenName === 'profile') {
+      document.getElementById('screenProfile').classList.add('active');
+      document.getElementById('navProfile').classList.add('active');
+    }
+  }
+
+  // Accurate 3-Phase Splash Screen Animation
+  function triggerSplashAnimation() {
+    const splash = document.getElementById('screenSplash');
+    const wordmark = document.getElementById('splashWordmark');
+    const line = document.getElementById('splashLine');
+    const tagline = document.getElementById('splashTagline');
+    const dot = document.getElementById('splashDot');
+
+    // Reset styles
+    splash.style.display = 'flex';
+    wordmark.classList.remove('animate');
+    line.classList.remove('animate');
+    tagline.classList.remove('animate');
+    dot.classList.remove('animate');
+
+    // Phase 1: Wordmark rises
+    setTimeout(() => {
+      wordmark.classList.add('animate');
+    }, 100);
+
+    // Phase 2: Gold sweep line
+    setTimeout(() => {
+      line.classList.add('animate');
+    }, 650);
+
+    // Phase 3: Tagline & dot pulse
+    setTimeout(() => {
+      tagline.classList.add('animate');
+      dot.classList.add('animate');
+    }, 1150);
+
+    // Fade out and transition to home
+    setTimeout(() => {
+      splash.style.transition = 'opacity 0.4s ease';
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        splash.style.opacity = '1';
+        goToScreen('home');
+      }, 400);
+    }, 2100);
+  }
+
+  // Voice Recording Simulator
+  let isRecording = false;
+  function toggleVoiceRecording() {
+    const mic = document.getElementById('micBtn');
+    const wave = document.getElementById('waveBars');
+    const transcript = document.getElementById('transcriptBox');
+
+    isRecording = !isRecording;
+    if (isRecording) {
+      mic.classList.add('recording');
+      wave.classList.add('active');
+      transcript.innerText = "Listening to your verbal defense...";
+      setTimeout(() => {
+        if (isRecording) {
+          simulateVoiceInput();
+        }
+      }, 1600);
+    } else {
+      mic.classList.remove('recording');
+      wave.classList.remove('active');
+    }
+  }
+
+  function simulateVoiceInput() {
+    goToScreen('workspace');
+    const mic = document.getElementById('micBtn');
+    const wave = document.getElementById('waveBars');
+    const transcript = document.getElementById('transcriptBox');
+
+    mic.classList.add('recording');
+    wave.classList.add('active');
+    transcript.innerText = "Transcribing: 'We use low + (high - low) / 2 to avoid 32-bit signed integer overflow while preserving invariant correctness.'";
+
+    setTimeout(() => {
+      mic.classList.remove('recording');
+      wave.classList.remove('active');
+      isRecording = false;
+    }, 1500);
+  }
+
+  // Multi-Stage AI Analysis Flow (6-second accurate simulation)
+  function runAiAnalysisFlow() {
+    goToScreen('analysis');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    const subtitle = document.getElementById('aiStepSubtitle');
+
+    [step1, step2, step3, step4].forEach(s => {
+      s.className = 'analysis-step-row';
+    });
+
+    step1.classList.add('active');
+    subtitle.innerText = "Testing invariant correctness...";
+
+    setTimeout(() => {
+      step1.classList.remove('active');
+      step1.classList.add('completed');
+      step2.classList.add('active');
+      subtitle.innerText = "Evaluating boundary conditions...";
+    }, 800);
+
+    setTimeout(() => {
+      step2.classList.remove('active');
+      step2.classList.add('completed');
+      step3.classList.add('active');
+      subtitle.innerText = "Scoring verbal explanation depth...";
+    }, 1700);
+
+    setTimeout(() => {
+      step3.classList.remove('active');
+      step3.classList.add('completed');
+      step4.classList.add('active');
+      subtitle.innerText = "Minting cryptographic proof card...";
+    }, 2500);
+
+    setTimeout(() => {
+      step4.classList.remove('active');
+      step4.classList.add('completed');
+      goToScreen('improvement');
+    }, 3300);
+  }
+
+  // Tab switching in ProgressAnalyticsScreen
+  function switchProgressTab(tabName) {
+    document.querySelectorAll('.tab-pill-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    if (tabName === 'overview') {
+      document.getElementById('tabBtnOverview').classList.add('active');
+      document.getElementById('tabOverview').classList.add('active');
+    } else if (tabName === 'skills') {
+      document.getElementById('tabBtnSkills').classList.add('active');
+      document.getElementById('tabSkills').classList.add('active');
+    } else if (tabName === 'perf') {
+      document.getElementById('tabBtnPerf').classList.add('active');
+      document.getElementById('tabPerf').classList.add('active');
+    }
+  }
+
+  // Modals for Help & About
+  function openModal(type) {
+    const overlay = document.getElementById('modalOverlay');
+    const title = document.getElementById('modalTitle');
+    const sub = document.getElementById('modalSub');
+    const body = document.getElementById('modalBody');
+
+    if (type === 'help') {
+      title.innerText = "Help & Support";
+      sub.innerText = "How ProofLoop Works";
+      body.innerHTML = `
+        • Complete missions to earn Proof Cards<br>
+        • Unlock new skills by finishing prerequisites<br>
+        • Answer adaptive questions to prove mastery<br>
+        • Retry missions to improve your score<br><br>
+        <strong>For help or feedback:</strong><br>
+        📧 support@proofloop.app<br>
+        💬 discord.gg/proofloop
+      `;
+    } else {
+      title.innerText = "About ProofLoop";
+      sub.innerText = "ProofLoop v1.0";
+      body.innerHTML = `
+        ProofLoop is a mastery-based learning platform that replaces passive study with active proof.<br><br>
+        Instead of just watching or reading, you solve real problems, defend your reasoning, and earn Proof Cards — verifiable evidence of genuine understanding.<br><br>
+        Built with Jetpack Compose · Kotlin · Gemini AI<br>
+        Designed for hackathon judges and real learners alike.<br><br>
+        © 2026 ProofLoop Team
+      `;
+    }
+    overlay.classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+
+  function showLockedAlert(msg) {
+    alert("🔒 " + msg);
+  }
+
+  function shareProofCard() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'ProofLoop Verified Proof Card',
+        text: 'I just verified my algorithmic reasoning mastery on ProofLoop!',
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      alert("✅ Proof Card link copied to clipboard! (Verifiable Hash: 0x8f2a...e91c)");
+    }
+  }
+
+  // Run splash on first load
+  window.addEventListener('DOMContentLoaded', () => {
+    triggerSplashAnimation();
+  });
+</script>
+</body>
+</html>
